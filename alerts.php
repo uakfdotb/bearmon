@@ -1,5 +1,13 @@
 <?php
 
+/*
+* Sends an email to target with the given parameters.
+* From address and email method are specified in configuration.
+*
+* $data: the email address to send to
+* $subject: email subject
+* $body: email body (plaintext)
+*/
 function alert_email($data, $subject, $body) {
 	$config = $GLOBALS['config'];
 	$from = filter_var($config['mail_from'], FILTER_SANITIZE_EMAIL);
@@ -45,6 +53,35 @@ function alert_email($data, $subject, $body) {
 		$headers = "From: $from\r\n";
 		$headers .= "Content-type: text/plain\r\n";
 		return mail($to, $subject, $body, $headers);
+	}
+}
+
+/*
+* Sends an SMS message via Twilio to the given number.
+* The message is "[$title] $message"
+* $config must include the strings twilio_accountsid, twilio_authtoken, and twilio_number
+*
+* $target_number: phone number to send SMS message to.
+* $title: SMS title
+* $message: SMS body
+*/
+function alert_sms_twilio($target_number, $title, $message) {
+	global $config;
+	require_once('twilio-php/Services/Twilio.php');
+
+	$message = "[$title] $message";
+	$client = new Services_Twilio($config['twilio_accountsid'], $config['twilio_authtoken']);
+
+	try {
+		$params = array();
+		$params['From'] = $config['twilio_number'];
+		$params['To'] = $target_number;
+		$params['Body'] = $message;
+		$message = $client->account->messages->create($params);
+		return true;
+	} catch(Services_Twilio_RestException $e) {
+		echo 'alert_sms_twilio: error: ' . $e->getMessage() . "\n";
+		return false;
 	}
 }
 
