@@ -13,16 +13,18 @@ function check_http_contains($data) {
 		die("check_http_contains: encountered invalid request data [$data]\n");
 	}
 
-	$page = @file_get_contents($parts[0]);
+	$result = check_http_helper($parts[0]);
 
-	if(strpos($page, $parts[1]) !== false) {
+	if($result['status'] == 'fail') {
+		return $result;
+	} else if(strpos($result['content'], $parts[1]) !== false) {
 		return array('status' => 'success');
 	} else {
 		return array('status' => 'fail', 'message' => "target [{$parts[0]}] does not contain string [{$parts[1]}]");
 	}
 }
 
-function check_http_status_helper($url, $expected_status) {
+function check_http_helper($url) {
 	$handle = curl_init($url);
 
 	if($handle === false) {
@@ -30,6 +32,10 @@ function check_http_status_helper($url, $expected_status) {
 	}
 
 	curl_setopt($handle,  CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($handle, CURLOPT_FOLLOWLOCATION, true);
+	curl_setopt($handle, CURLOPT_AUTOREFERER, true);
+	curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
+	curl_setopt($handle, CURLOPT_TIMEOUT, 15);
 	$response = curl_exec($handle);
 
 	if($response === false) {
@@ -39,10 +45,18 @@ function check_http_status_helper($url, $expected_status) {
 	$httpCode = curl_getinfo($handle, CURLINFO_HTTP_CODE);
 	curl_close($handle);
 
-	if($httpCode == $expected_status) {
+	return array('status' => 'success', 'code' => $httpCode, 'content' => $response);
+}
+
+function check_http_status_helper($url, $expected_status) {
+	$result = check_http_helper($url);
+
+	if($result['status'] == 'fail') {
+		return $result;
+	} else if($result['code'] == $expected_status) {
 		return array('status' => 'success');
 	} else {
-		return array('status' => 'fail', 'message' => "target [$url] returned unexpected status [$httpCode], expected [$expected_status]");
+		return array('status' => 'fail', 'message' => "target [$url] returned unexpected status [{$result['code']}], expected [$expected_status]");
 	}
 }
 
