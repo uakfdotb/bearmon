@@ -1,12 +1,12 @@
 <?php
 
-monitor_lock_init('monitor.php');
-
 require_once('config.php');
 require_once('common.php');
 require_once('database.php');
 require_once('checks.php');
 require_once('alerts.php');
+
+monitor_lock_init('monitor.php');
 
 $result = database_query("SELECT id, name, type, data, fail_count, success_count, status, last_alert, turn_count FROM checks", array(), true);
 
