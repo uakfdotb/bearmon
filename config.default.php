@@ -15,6 +15,9 @@ $config['mail_smtp_port'] = '465';
 $config['mail_smtp_username'] = 'monitor';
 $config['mail_smtp_password'] = 'password';
 
+//delimiter to use for check data
+$config['check_delimiter'] = '|';
+
 //multi settings
 // multi mode allows you to iterate over slaves when running checks
 // currently the only purpose is to avoid sending erroneous alerts in case one slave dies

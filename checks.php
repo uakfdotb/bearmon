@@ -1,8 +1,13 @@
 <?php
 
+function check_explode($data) {
+	global $config;
+	return explode($config['check_delimiter'], $data);
+}
+
 function check_http_contains($data) {
 	//format: http_target[newline]substring
-	$parts = explode("\n", $data);
+	$parts = check_explode($data);
 
 	if(count($parts) < 2) {
 		die("check_http_contains: encountered invalid request data [$data]\n");
@@ -43,7 +48,7 @@ function check_http_status_helper($url, $expected_status) {
 
 function check_http_status($data) {
 	//format: http_target[newline]expected_status
-	$parts = explode("\n", $data);
+	$parts = check_explode($data);
 
 	if(count($parts) < 2) {
 		die("check_http_status: encountered invalid request data [$data]\n");
