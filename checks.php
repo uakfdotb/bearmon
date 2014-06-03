@@ -6,7 +6,7 @@ function check_explode($data) {
 }
 
 function check_http_contains($data) {
-	//format: http_target[newline]substring
+	//format: http_target[delimiter]substring
 	$parts = check_explode($data);
 
 	if(count($parts) < 2) {
@@ -47,7 +47,7 @@ function check_http_status_helper($url, $expected_status) {
 }
 
 function check_http_status($data) {
-	//format: http_target[newline]expected_status
+	//format: http_target[delimiter]expected_status
 	$parts = check_explode($data);
 
 	if(count($parts) < 2) {
