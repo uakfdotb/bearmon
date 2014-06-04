@@ -32,5 +32,3 @@ Define an alert.
 Now, run bearmon:
 
     php monitor.php
-
-You can set up a cron job to run it continuously, or run both multi-master and multi-slave.
