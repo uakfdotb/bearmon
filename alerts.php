@@ -4,14 +4,18 @@
 * Sends an email to target with the given parameters.
 * From address and email method are specified in configuration.
 *
-* $data: the email address to send to
+* $data['email']: the email address to send to
 * $subject: email subject
 * $body: email body (plaintext)
 */
 function alert_email($data, $subject, $body) {
+	if(!isset($data['email'])) {
+		die("alert_email: missing email\n");
+	}
+
 	$config = $GLOBALS['config'];
 	$from = filter_var($config['mail_from'], FILTER_SANITIZE_EMAIL);
-	$to = $data;
+	$to = $data['email'];
 
 	if(isset($config['redirect_email']) && $config['redirect_email'] !== false) {
 		$body = "This is a redirected email: original to $to\n\n" . $body;
@@ -61,20 +65,30 @@ function alert_email($data, $subject, $body) {
 * The message is "[$title] $message"
 * $config must include the strings twilio_accountsid, twilio_authtoken, and twilio_number
 *
-* $target_number: phone number to send SMS message to.
+* $data['number']: phone number to send SMS message to.
 * $title: SMS title
 * $message: SMS body
 */
-function alert_sms_twilio($target_number, $title, $message) {
+function alert_sms_twilio($data, $title, $message) {
 	global $config;
 	require_once('twilio-php/Services/Twilio.php');
 
+	if(!isset($data['number'])) {
+		die("alert_sms_twilio: missing number\n");
+	}
+
+	$config_target = $config;
+
+	if(isset($data['twilio_accountsid']) && isset($data['twilio_authtoken']) && isset($data['twilio_number'])) {
+		$config_target = $data;
+	}
+
 	$message = "[$title] $message";
-	$client = new Services_Twilio($config['twilio_accountsid'], $config['twilio_authtoken']);
+	$client = new Services_Twilio($config_target['twilio_accountsid'], $config_target['twilio_authtoken']);
 
 	try {
 		$params = array();
-		$params['From'] = $config['twilio_number'];
+		$params['From'] = $config_target['twilio_number'];
 		$params['To'] = $target_number;
 		$params['Body'] = $message;
 		$message = $client->account->messages->create($params);

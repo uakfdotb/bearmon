@@ -33,7 +33,7 @@ while(true) {
 		}
 
 		echo "processing check $check_id: calling $check_fname\n";
-		$check_result = call_user_func($check_fname, $row['data']);
+		$check_result = call_user_func($check_fname, monitor_decode($row['data']));
 
 		if(!is_array($check_result) || !isset($check_result['status'])) {
 			die("Bad check function [{$check_fname}]: returned non-array or missing status.\n");
@@ -64,7 +64,7 @@ while(true) {
 								die("Invalid alert function [{$alert_fname}]!\n");
 							}
 
-							call_user_func($alert_fname, $alert_row['data'], "Check offline: $check_name", $check_result['message']);
+							call_user_func($alert_fname, monitor_decode($alert_row['data']), "Check offline: $check_name", $check_result['message']);
 						}
 					}
 				} else {

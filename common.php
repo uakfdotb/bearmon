@@ -247,4 +247,21 @@ function monitor_lock_release() {
 	}
 }
 
+function monitor_decode($data) {
+	$array = array();
+	$parts = explode('&', $data);
+
+	foreach($parts as $part) {
+		$keys = explode('=', $part);
+
+		if(count($keys) >= 2) {
+			$k = urldecode($keys[0]);
+			$v = urldecode($keys[1]);
+			$array[$k] = $v;
+		}
+	}
+
+	return $array;
+}
+
 ?>
