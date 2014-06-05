@@ -5,10 +5,10 @@
 * From address and email method are specified in configuration.
 *
 * $data['email']: the email address to send to
-* $subject: email subject
-* $body: email body (plaintext)
+* $context['title']: email subject
+* $context['message']: email body (plaintext)
 */
-function alert_email($data, $subject, $body) {
+function alert_email($data, $context) {
 	if(!isset($data['email'])) {
 		die("alert_email: missing email\n");
 	}
@@ -37,7 +37,7 @@ function alert_email($data, $subject, $body) {
 		$password = $config['mail_smtp_password'];
 		$headers = array ('From' => $from,
 						  'To' => $to,
-						  'Subject' => $subject,
+						  'Subject' => $context['title'],
 						  'Content-Type' => 'text/plain');
 		$smtp = Mail::factory('smtp',
 							  array ('host' => $host,
@@ -46,7 +46,7 @@ function alert_email($data, $subject, $body) {
 									 'username' => $username,
 									 'password' => $password));
 
-		$mail = $smtp->send($to, $headers, $body);
+		$mail = $smtp->send($to, $headers, $context['message']);
 
 		if (PEAR::isError($mail)) {
 			return false;
@@ -56,7 +56,7 @@ function alert_email($data, $subject, $body) {
 	} else {
 		$headers = "From: $from\r\n";
 		$headers .= "Content-type: text/plain\r\n";
-		return mail($to, $subject, $body, $headers);
+		return mail($to, $context['title'], $context['message'], $headers);
 	}
 }
 
@@ -66,10 +66,11 @@ function alert_email($data, $subject, $body) {
 * $config must include the strings twilio_accountsid, twilio_authtoken, and twilio_number
 *
 * $data['number']: phone number to send SMS message to.
-* $title: SMS title
-* $message: SMS body
+* $data['twilio_accountsid'], $data['twilio_authtoken'], $data['twilio_number']: optional Twilio configuration
+* $context['title']: used in creating SMS message
+* $context['message']: used in creating SMS message
 */
-function alert_sms_twilio($data, $title, $message) {
+function alert_sms_twilio($data, $context) {
 	global $config;
 	require_once('twilio-php/Services/Twilio.php');
 
@@ -83,14 +84,14 @@ function alert_sms_twilio($data, $title, $message) {
 		$config_target = $data;
 	}
 
-	$message = "[$title] $message";
+	$sms_message = "[{$context['title']}] {$context['message']}";
 	$client = new Services_Twilio($config_target['twilio_accountsid'], $config_target['twilio_authtoken']);
 
 	try {
 		$params = array();
 		$params['From'] = $config_target['twilio_number'];
 		$params['To'] = $target_number;
-		$params['Body'] = $message;
+		$params['Body'] = $sms_message;
 		$message = $client->account->messages->create($params);
 		return true;
 	} catch(Services_Twilio_RestException $e) {

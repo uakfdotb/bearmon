@@ -64,7 +64,17 @@ while(true) {
 								die("Invalid alert function [{$alert_fname}]!\n");
 							}
 
-							call_user_func($alert_fname, monitor_decode($alert_row['data']), "Check offline: $check_name", $check_result['message']);
+							//build context
+							$context = array();
+							$context['check_id'] = $check_id;
+							$context['check_name'] = $check_name;
+							$context['fail_count'] = $fail_count;
+							$context['success_count'] = $success_count;
+							$context['contact_id'] = $alert_row['id'];
+							$context['title'] = "Check offline: $check_name";
+							$context['message'] = $check_result['message'];
+
+							call_user_func($alert_fname, monitor_decode($alert_row['data']), $context);
 						}
 					}
 				} else {
