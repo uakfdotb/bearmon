@@ -1,5 +1,13 @@
 <?php
 
+function check_extract($data, $key, $default) {
+	if(isset($data[$key])) {
+		return $data[$key];
+	} else {
+		return $default;
+	}
+}
+
 function check_http_contains($data) {
 	//keys: substring, url (also http_helper params)
 	if(!isset($data['substring']) || !isset($data['url'])) {
@@ -74,25 +82,18 @@ function check_http_ok($data) {
 }
 
 function check_ssl_expire($data) {
-	//keys: hostname, optional days (default 7) and timeout (default 10)
+	//keys: hostname, optional port (default 443), days (default 7), and timeout (default 10)
 	if(!isset($data['hostname'])) {
 		die("check_ssl_expire: missing hostname");
 	}
 
 	$hostname = $data['hostname'];
-	$days = 7;
-	$timeout = 10;
-
-	if(isset($data['days'])) {
-		$days = $data['days'];
-	}
-
-	if(isset($data['timeout'])) {
-		$timeout = $data['timeout'];
-	}
+	$port = check_extract($data, 'port', 443);
+	$days = check_extract($data, 'days', 7);
+	$timeout = check_extract($data, 'timeout', 10);
 
 	$get = stream_context_create(array("ssl" => array("capture_peer_cert" => TRUE)));
-	$read = stream_socket_client("ssl://$hostname:443", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $get);
+	$read = stream_socket_client("ssl://$hostname:$port", $errno, $errstr, 10, STREAM_CLIENT_CONNECT, $get);
 
 	if($read === false) {
 		return array('status' => 'fail', 'message' => "failed to read from host [$hostname]");
@@ -139,11 +140,7 @@ function check_tcp_connect($data) {
 
 	$target = $data['target'];
 	$port = $data['port'];
-	$timeout = 5;
-
-	if(isset($data['timeout'])) {
-		$timeout = $data['timeout'];
-	}
+	$timeout = check_extract($data, 'timeout', 5);
 
 	if(($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
 		echo "check_tcp_connect: warning: failed to create a socket!\n";
