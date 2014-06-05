@@ -90,7 +90,7 @@ function alert_sms_twilio($data, $context) {
 	try {
 		$params = array();
 		$params['From'] = $config_target['twilio_number'];
-		$params['To'] = $target_number;
+		$params['To'] = $data['number'];
 		$params['Body'] = $sms_message;
 		$message = $client->account->messages->create($params);
 		return true;
