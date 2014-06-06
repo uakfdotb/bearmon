@@ -1,5 +1,7 @@
 <?php
 
+database_init();
+
 function database_die($ex = NULL) {
 	if($ex == NULL) {
 		die("Encountered database error.\n" . monitor_get_backtrace() . "\n");
@@ -8,10 +10,39 @@ function database_die($ex = NULL) {
 	}
 }
 
-try {
-	$database = new PDO('mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_name'], $config['db_username'], $config['db_password'], array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-} catch(PDOException $ex) {
-	database_die($ex);
+function database_error($ex = NULL) {
+	global $database;
+
+	try {
+		$database->query('SELECT 1');
+		database_die($ex);
+	} catch(PDOException $e) {
+		//indicates error due to disconnect
+		database_reconnect();
+	}
+}
+
+function database_init($reconnect = false) {
+	global $database, $config;
+
+	try {
+		$database = new PDO('mysql:host=' . $config['db_host'] . ';dbname=' . $config['db_name'], $config['db_username'], $config['db_password'], array(PDO::ATTR_EMULATE_PREPARES => false, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
+	} catch(PDOException $ex) {
+		if(!$reconnect) {
+			database_die($ex);
+		}
+	}
+}
+
+function database_reconnect() {
+	global $database;
+	$database = NULL;
+
+	while($database == NULL) {
+		print "database: reconnecting to database\n";
+		sleep(5);
+		database_init(true);
+	}
 }
 
 function database_query($command, $array = array(), $assoc = false) {
@@ -35,7 +66,8 @@ function database_query($command, $array = array(), $assoc = false) {
 
 		if(!$query) {
 			print_r($database->errorInfo());
-			database_die();
+			database_error();
+			return database_query($command, $array, $assoc);
 		}
 
 		//set fetch mode depending on parameter
@@ -49,12 +81,14 @@ function database_query($command, $array = array(), $assoc = false) {
 
 		if(!$success) {
 			print_r($database->errorInfo());
-			database_die();
+			database_error();
+			return database_query($command, $array, $assoc);
 		}
 
 		return $query;
 	} catch(PDOException $ex) {
-		database_die($ex);
+		database_error($ex);
+		return database_query($command, $array, $assoc);
 	}
 }
 
