@@ -15,10 +15,6 @@ $config['mail_smtp_port'] = '465';
 $config['mail_smtp_username'] = 'monitor';
 $config['mail_smtp_password'] = 'password';
 
-//delimiter to use for check data
-$config['check_delimiter'] = '|';
-$config['alert_delimiter'] = '|';
-
 //daemon settings
 $config['sleep_interval'] = 5; //seconds to sleep when idle
 

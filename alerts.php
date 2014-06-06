@@ -15,14 +15,7 @@ function alert_email($data, $context) {
 
 	$config = $GLOBALS['config'];
 	$from = filter_var($config['mail_from'], FILTER_SANITIZE_EMAIL);
-	$to = $data['email'];
-
-	if(isset($config['redirect_email']) && $config['redirect_email'] !== false) {
-		$body = "This is a redirected email: original to $to\n\n" . $body;
-		$to = $config['redirect_email'];
-	}
-
-	$to = filter_var($to, FILTER_SANITIZE_EMAIL);
+	$to = filter_var($data['email'], FILTER_SANITIZE_EMAIL);
 
 	if($to === false || $from === false) {
 		return false;
