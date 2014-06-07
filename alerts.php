@@ -93,4 +93,37 @@ function alert_sms_twilio($data, $context) {
 	}
 }
 
+/*
+* Notifies a web hook over HTTP regarding alert.
+* All context parameters are sent, via GET.
+*
+* data['url']: the target web hook
+* context: encoded as GET parameters
+*/
+function alert_http($data, $context) {
+	if(!isset($data['url'])) {
+		die("alert_http: missing url\n");
+	}
+
+	$url = $data['url'] . '?';
+	$first = true;
+
+	foreach($context as $k => $v) {
+		if($first) {
+			$first = false;
+		} else {
+			$url .= '&';
+		}
+
+		$url .= urlencode($k) . '=' . urlencode($v);
+	}
+
+	require_once('checks.php');
+	$result = check_http_helper(array('url' => $url));
+
+	if($result['status'] == 'fail' && isset($result['message'])) {
+		echo "alert_http: error: {$result['message']}\n";
+	}
+}
+
 ?>
