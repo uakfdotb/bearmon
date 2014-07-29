@@ -33,6 +33,10 @@ Now, run bearmon:
 
     php monitor.php
 
+Note: all "data" values above use URL encoding scheme to encode key-value pairs.
+So, if your URL contains ampersand (&) symbols, they should be encoded as %26 in the database.
+See monitor_decode in common.php for how the data is decoded.
+
 Multi-source monitoring
 ---------------------
 
