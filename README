@@ -19,11 +19,11 @@ First, look at config.php and configure database, mail, and other settings.
 
 Define a check. The one below will make sure the URL contains the given substring.
 
-    INSERT INTO checks (name, type, data) VALUES ('example.com', 'http_contains', 'http://example.com/critical.php|hello world');
+    INSERT INTO checks (name, type, data) VALUES ('example.com', 'http_contains', 'url=http://example.com/critical.php&substring=GOOD');
 
 Define a contact.
 
-    INSERT INTO contacts (type, data) VALUES ('email', 'admin@example.com');
+    INSERT INTO contacts (type, data) VALUES ('email', 'email=admin@example.com');
 
 Define an alert.
 
@@ -32,3 +32,14 @@ Define an alert.
 Now, run bearmon:
 
     php monitor.php
+
+Multi-source monitoring
+---------------------
+
+bearmon can be configured to monitor services from multiple sources.
+This way, if the source crashes, you don't get extraneous notifications.
+
+There are two steps to setting this up. You can do the first step without doing the second and get a decent system.
+
+* Run monitor.php on multiple slaves with the same database setup.
+* Configure your MySQL to run in clustered/HA mode.
